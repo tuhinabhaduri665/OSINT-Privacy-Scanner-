@@ -18,10 +18,25 @@ cursor.execute('''
         score INTEGER,
         risk TEXT
     )
-''')  
+''')
 conn.commit()
+conn.close() 
 
-def save_scan_history(username, score, risklevel):
+def search_username_hitory():
+    connection = sqlite3.connect("scan_history.db")
+    cursor = connection.cursor()
+    
+    username = input("Enter a username to search: ")
+    cursor.execute('''
+               SELECT username, score, risk, timestamp
+                FROM scan_history
+                WHERE username = ?
+                ORDER BY timestamp DESC
+            ''', (username,))                
+    conn.commit()
+
+
+def save_scan_history(username, score, risk):
     print("DEBUG: Entered save_scan_history")
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -64,11 +79,29 @@ def view_scan_history():
         print("DEBUG: File not found. No scan history available.")
     
     print(f"VIEW PATH: {os.path.abspath('scan_history.txt')}")
-
-        
-        
-
-
+    
+def view_database_history():
+    connection = sqlite3.connect("scan_history.db")
+    cursor = connection.cursor()
+    
+    cursor.execute("""
+                   SELECT username, score, risk, timestamp
+                   FROM scan_history
+                   ORDER BY timestamp DESC
+                   LIMIT 10
+    """)
+    
+    records = cursor.fetchall()
+    if records:
+        print("Latest Scan History from Database:")
+        for record in records:
+            print(f"Username: {record[0]} | Score: {record[1]} | Risk: {record[2]} | Timestamp: {record[3]}")
+    else:
+        print("No scan history found in the database.")
+    
+    connection.close()
+                   
+                   
 platforms = {
     "GitHub": f"https://github.com/{username}",
     "Twitter": f"https://twitter.com/{username}",
@@ -134,7 +167,7 @@ print("Scan history saved.")
 
 view_history = input("Do you want to view your scan history? (yes/no): ").strip().lower()
 if view_history == "yes":
-    view_scan_history()
+    view_database_history()
 else:    
     print("Scan history not displayed.")
     

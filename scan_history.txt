@@ -5,3 +5,7 @@
 [2026-06-18 10:36:33] Username: elonmusk |Exposure Score: 150 |Risk Level: 
 [2026-06-18 10:39:34] Username: elonmusk |Exposure Score: 150 |Risk Level: 
 [2026-06-18 10:46:02] Username: elonmusk |Exposure Score: 150 |Risk Level: High
+[2026-06-18 11:55:12] Username: python -u "d:\Cybersecurity_Project_01\privacy_scanner.py" |Exposure Score: 150 |Risk Level: High
+[2026-06-18 11:58:14] Username: lola |Exposure Score: 175 |Risk Level: High
+[2026-06-18 12:46:02] Username: elonmusk |Exposure Score: 150 |Risk Level: High
+[2026-06-21 11:25:32] Username: ollama |Exposure Score: 175 |Risk Level: High
