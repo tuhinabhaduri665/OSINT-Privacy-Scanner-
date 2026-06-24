@@ -22,19 +22,47 @@ cursor.execute('''
 conn.commit()
 conn.close() 
 
-def search_username_hitory():
+
+def view_statistics():
     connection = sqlite3.connect("scan_history.db")
     cursor = connection.cursor()
     
-    username = input("Enter a username to search: ")
+    print("=== DATABASE STATISTICS ===")
+    
+    #total scans
+    cursor.execute('SELECT COUNT(*) FROM scan_history')
+    total_scans = cursor.fetchone()[0]
+    print(f"Total Scans: {total_scans}")
+    
+    #Risk Breakdown
     cursor.execute('''
-               SELECT username, score, risk, timestamp
-                FROM scan_history
-                WHERE username = ?
-                ORDER BY timestamp DESC
-            ''', (username,))                
-    conn.commit()
+                   SELECT risk, COUNT(*) FROM scan_history
+                   GROUP BY risk
+                   ''')
 
+    records = cursor.fetchall()
+    print("Risk Breakdown:")
+    
+    for risk, count in records:
+        if risk=="":
+            risk = "No Risk Level Assigned"
+        print(f"Risk: {risk}: {count}")
+        
+    cursor.execute('''
+                   SELECT username, COUNT(*) as count FROM scan_history
+                   GROUP BY username
+                   ORDER BY count DESC
+                   LIMIT 1
+                     ''')
+
+    most_frequent_record = cursor.fetchone()
+    if most_frequent_record:
+        most_frequent_username, count = most_frequent_record
+        print(f"Most frequently scanned username: {most_frequent_username} (Scanned {count} times)")
+    else:
+        print("No scan history found in the database.")
+
+    connection.close()
 
 def save_scan_history(username, score, risk):
     print("DEBUG: Entered save_scan_history")
@@ -63,6 +91,27 @@ def save_scan_history(username, score, risk):
     print("DEBUG: File write completed")
     print(f"SAVE PATH: {os.path.abspath('scan_history.txt')}")
 
+def search_username_history(username):
+    connection = sqlite3.connect("scan_history.db")
+    cursor = connection.cursor()
+    
+    cursor.execute('''
+        SELECT username, score, risk, timestamp
+        FROM scan_history
+        WHERE username = ?
+        ORDER BY timestamp DESC
+    ''', (username,))
+    
+    records = cursor.fetchall()
+    if records:
+        print(f"Scan History for '{username}':")
+        for record in records:
+            print(f"Username: {record[0]} | Score: {record[1]} | Risk: {record[2]} | Timestamp: {record[3]}")
+    else:
+        print(f"No scan history found for '{username}'.")
+    
+    connection.close()
+
 def view_scan_history():
     try:
         with open("scan_history.txt", "r", encoding = "utf-8") as file:
@@ -79,6 +128,7 @@ def view_scan_history():
         print("DEBUG: File not found. No scan history available.")
     
     print(f"VIEW PATH: {os.path.abspath('scan_history.txt')}")
+    
     
 def view_database_history():
     connection = sqlite3.connect("scan_history.db")
@@ -170,4 +220,21 @@ if view_history == "yes":
     view_database_history()
 else:    
     print("Scan history not displayed.")
+    
+search_history = input("Do you want to search for a specific username in the scan history? (yes/no): ").strip().lower()
+if search_history == "yes":
+    search_username = input("Enter the username to search for: ").strip()
+    search_username_history(search_username)
+else:
+    print("Search skipped.")
+    
+view_stats = input("Do you want to view database statistics? (yes/no): ").strip().lower()
+if view_stats == "yes":
+    view_statistics()
+else:
+    print("Statistics not displayed.")
+    
+
+
+    
     
